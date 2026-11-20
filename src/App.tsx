@@ -4,7 +4,7 @@ import { TaskView } from "./components/TaskView";
 import { TitleBar } from "./components/TitleBar";
 import { emitCommand, isTextField } from "./lib/shortcuts";
 import { watchTheme } from "./lib/theme";
-import { setAlwaysOnTop } from "./lib/window";
+import { setAlwaysOnTop, showWindow } from "./lib/window";
 import { actions, store, useApp } from "./state/app";
 import type { View } from "./types";
 
@@ -25,6 +25,9 @@ export function App() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const ready = phase === "ready";
 
+  // The native window starts hidden; reveal it once the first DOM is committed.
+  // (Not requestAnimationFrame: hidden webviews don't run animation frames.)
+  useEffect(showWindow, []);
   useEffect(() => (ready ? watchTheme(theme) : undefined), [ready, theme]);
   useEffect(() => {
     if (ready) setAlwaysOnTop(alwaysOnTop);
