@@ -1,0 +1,33 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+src-tauri/target/
+src-tauri/gen/schemas/
+
+# Local user data — never commit personal tasks/plans
+*.db
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+window-state.json
+
+# Logs & caches
+*.log
+npm-debug.log*
+.vite/
+coverage/
+*.tsbuildinfo
+
+# Editor / OS
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+
+# Env / secrets
+.env
+.env.*
