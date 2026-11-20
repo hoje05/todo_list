@@ -192,6 +192,28 @@ await test("empty title is rejected", async () => {
   assert((await titles()).length === 4, "blank task was added");
 });
 
+await test("IME: Enter during Korean composition waits for the final syllable", async () => {
+  const before = (await titles()).length;
+  await page.evaluate(() => {
+    const input = document.querySelector("#quick-add");
+    const setValue = (v) => {
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value").set.call(input, v);
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+    };
+    setValue("한국어 입");
+    input.dispatchEvent(new CompositionEvent("compositionstart", { bubbles: true, data: "" }));
+    input.form.requestSubmit(); // Enter pressed while "력" is still being composed
+    setValue("한국어 입력"); // IME commits the syllable
+    input.dispatchEvent(new CompositionEvent("compositionend", { bubbles: true, data: "력" }));
+  });
+  await until(async () => (await titles()).length === before + 1, "task added after composition");
+  assert((await titles())[0] === "한국어 입력", `title ${(await titles())[0]}`);
+  assert((await page.inputValue("#quick-add")) === "", "stray character left in input");
+  await page.hover("text=한국어 입력");
+  await page.click("[aria-label=\"'한국어 입력' 삭제\"]");
+  await until(() => q("SELECT count(*) n FROM tasks WHERE title='한국어 입력'")[0].n === 0, "cleanup");
+});
+
 await test("checkbox completes task, persisted immediately, visually distinct", async () => {
   await page.click("[role=checkbox][aria-label=\"'운동하기' 완료\"]");
   await until(() => q("SELECT completed FROM tasks WHERE title='운동하기'")[0].completed === 1, "completed saved");

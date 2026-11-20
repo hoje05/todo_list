@@ -40,6 +40,7 @@ export function TaskEditor({ task, onClose }: { task: Task; onClose: () => void 
   }
 
   function onKeyDown(e: KeyboardEvent) {
+    if (e.nativeEvent.isComposing) return; // keys belong to the IME while composing
     if (e.key === "Escape") {
       e.preventDefault();
       e.stopPropagation();

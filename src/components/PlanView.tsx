@@ -1,7 +1,8 @@
-import { memo, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
+import { memo, useEffect, useMemo, useRef, useState } from "react";
 import { formatRange } from "../lib/dates";
 import { onCommand } from "../lib/shortcuts";
 import { EMPTY_PROGRESS, computeProgress, sortPlans, type Progress } from "../lib/taskLogic";
+import { useImeSafeSubmit } from "../lib/useImeSafeSubmit";
 import { useToday } from "../lib/useToday";
 import { actions, useApp } from "../state/app";
 import type { Plan } from "../types";
@@ -78,8 +79,7 @@ export function PlanView() {
     [],
   );
 
-  function submit(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault();
+  const submitProps = useImeSafeSubmit(() => {
     const input = addRef.current;
     if (!input) return;
     const plan = actions.addPlan(input.value);
@@ -87,7 +87,7 @@ export function PlanView() {
       input.value = "";
       setOpenId(plan.id);
     } else input.focus();
-  }
+  });
 
   return (
     <div className="relative flex h-full flex-col">
@@ -107,7 +107,7 @@ export function PlanView() {
         )}
       </div>
 
-      <form onSubmit={submit} className="flex shrink-0 items-center gap-1.5 border-t border-line bg-surface px-2 py-2">
+      <form {...submitProps} className="flex shrink-0 items-center gap-1.5 border-t border-line bg-surface px-2 py-2">
         <input
           ref={addRef}
           maxLength={200}

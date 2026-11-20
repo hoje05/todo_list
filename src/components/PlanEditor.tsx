@@ -1,4 +1,5 @@
-import { useMemo, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
+import { useMemo, useRef, useState, type KeyboardEvent } from "react";
+import { useImeSafeSubmit } from "../lib/useImeSafeSubmit";
 import { cleanTitle, DESCRIPTION_MAX, TITLE_MAX, type Progress } from "../lib/taskLogic";
 import { TEXT_DEBOUNCE_MS } from "../state/actions";
 import { actions, useApp } from "../state/app";
@@ -30,6 +31,7 @@ export function PlanEditor({ plan, progress, onClose }: { plan: Plan; progress: 
   }
 
   function onKeyDown(e: KeyboardEvent) {
+    if (e.nativeEvent.isComposing) return; // keys belong to the IME while composing
     if (e.key === "Escape") {
       e.preventDefault();
       e.stopPropagation();
@@ -46,12 +48,11 @@ export function PlanEditor({ plan, progress, onClose }: { plan: Plan; progress: 
     }
   }
 
-  function addTask(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault();
+  const addTaskProps = useImeSafeSubmit(() => {
     const input = addRef.current;
     if (input && actions.addTask(input.value, { planId: plan.id })) input.value = "";
     input?.focus();
-  }
+  });
 
   return (
     <section role="dialog" aria-label="계획 편집" onKeyDown={onKeyDown} className="absolute inset-0 z-10 flex flex-col bg-bg">
@@ -185,7 +186,7 @@ export function PlanEditor({ plan, progress, onClose }: { plan: Plan; progress: 
             ))}
           </ul>
 
-          <form onSubmit={addTask} className="mt-1.5 flex items-center gap-1.5">
+          <form {...addTaskProps} className="mt-1.5 flex items-center gap-1.5">
             <input
               ref={addRef}
               maxLength={200}

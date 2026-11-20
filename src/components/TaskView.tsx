@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type DragEvent, type FormEvent, type KeyboardEvent } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type DragEvent, type KeyboardEvent } from "react";
 import { addDays } from "../lib/dates";
 import { onCommand } from "../lib/shortcuts";
 import { countTasks, selectVisibleTasks } from "../lib/taskLogic";
+import { useImeSafeSubmit } from "../lib/useImeSafeSubmit";
 import { useToday } from "../lib/useToday";
 import { actions, useApp } from "../state/app";
 import type { Filter, Task } from "../types";
@@ -65,8 +66,7 @@ export function TaskView() {
     requestAnimationFrame(() => addRef.current?.focus());
   }, []);
 
-  function submit(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault();
+  const submitProps = useImeSafeSubmit(() => {
     const input = addRef.current;
     if (!input) return;
     const dueDate = filter === "today" ? today : filter === "upcoming" ? addDays(today, 1) : null;
@@ -75,7 +75,7 @@ export function TaskView() {
       if (filter === "completed") actions.setSetting("filter", "all");
     }
     input.focus();
-  }
+  });
 
   // ----- Reordering (event delegation: rows stay dumb and memoized) -----
   function rowOf(target: EventTarget): HTMLLIElement | null {
@@ -242,7 +242,7 @@ export function TaskView() {
         )}
       </div>
 
-      <form onSubmit={submit} className="flex shrink-0 items-center gap-1.5 border-t border-line bg-surface px-2 py-2">
+      <form {...submitProps} className="flex shrink-0 items-center gap-1.5 border-t border-line bg-surface px-2 py-2">
         <input
           id="quick-add"
           ref={addRef}
