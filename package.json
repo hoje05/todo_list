@@ -10,7 +10,9 @@
     "lint": "eslint .",
     "typecheck": "tsc -b",
     "test": "vitest run",
-    "tauri": "tauri"
+    "tauri": "tauri",
+    "e2e": "node e2e/e2e.mjs",
+    "check": "npm run typecheck && npm run lint && npm test"
   },
   "dependencies": {
     "@tauri-apps/api": "~2.12.5",
